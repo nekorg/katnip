@@ -1,2 +1,2 @@
 # katnip
-Simple, scriptable UI dialogs in a Kitty window; any size, anywhere on screen
+Simple, scriptable UI dialogs running on a Kitty window; any size, anywhere on screen
