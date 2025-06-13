@@ -2,9 +2,7 @@ module github.com/codelif/katnip
 
 go 1.24.2
 
-replace git.sr.ht/~rockorager/vaxis => ./vaxis
-
-require git.sr.ht/~rockorager/vaxis v0.13.0
+require git.sr.ht/~rockorager/vaxis v0.14.0
 
 require (
 	github.com/containerd/console v1.0.3 // indirect

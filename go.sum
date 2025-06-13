@@ -1,5 +1,7 @@
 git.sr.ht/~rockorager/vaxis v0.13.0 h1:+F3ze1t4X5x87QEsyn/b9b9pWXw9MDqoHynoR/PHqKg=
 git.sr.ht/~rockorager/vaxis v0.13.0/go.mod h1:h94aKek3frIV1hJbdXjqnBqaLkbWXvV+UxAsQHg9bns=
+git.sr.ht/~rockorager/vaxis v0.14.0 h1:Z+DOcP6ZyzqJEiXgTA55VxxzcKARFsgaf8koUxONPYg=
+git.sr.ht/~rockorager/vaxis v0.14.0/go.mod h1:h94aKek3frIV1hJbdXjqnBqaLkbWXvV+UxAsQHg9bns=
 github.com/containerd/console v1.0.3 h1:lIr7SlA5PxZyMV30bDW0MGbiOPXwc63yRuCP0ARubLw=
 github.com/containerd/console v1.0.3/go.mod h1:7LqA/THxQ86k76b8c/EMSiaJ3h1eZkMkXar0TQ1gf3U=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
