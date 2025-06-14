@@ -20,10 +20,10 @@ const _BUF_SIZE = _BUF_HEAD_SIZE + _BUF_DATA_SIZE
 const _BUF_DATA_MASK = _BUF_DATA_SIZE - 1
 
 type Logger struct {
-	fd int
+	Fd int
 }
 
-func NewSharedMem() (*Logger, error) {
+func New() (*Logger, error) {
 	fd, err := unix.MemfdCreate("log", unix.MFD_CLOEXEC|unix.MFD_ALLOW_SEALING)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ type Reader struct {
 }
 
 func (l *Logger) NewReader() (io.Reader, error) {
-	buf, err := unix.Mmap(l.fd, 0, int(_BUF_SIZE), unix.PROT_WRITE|unix.PROT_READ, unix.MAP_SHARED)
+	buf, err := unix.Mmap(l.Fd, 0, int(_BUF_SIZE), unix.PROT_WRITE|unix.PROT_READ, unix.MAP_SHARED)
 	if err != nil {
 		return nil, err
 	}
@@ -54,28 +54,37 @@ func (l *Logger) NewReader() (io.Reader, error) {
 	return &Reader{buf: buf, buf_d: buf[_BUF_HEAD_SIZE:], buf_head: &h.head, buf_tail: &h.tail}, nil
 }
 
-func (r *Reader) Read(b []byte) (n int, err error) {
-	head := atomic.LoadUint32(r.buf_head)
-	tail := atomic.LoadUint32(r.buf_tail)
+func (r *Reader) Read(p []byte) (n int, err error) {
+    for n == 0 {
+        head := atomic.LoadUint32(r.buf_head)
+        tail := atomic.LoadUint32(r.buf_tail)
 
-	for {
-		if head == tail {
-			// buffer empty
-			futex.Wait(unsafe.Pointer(r.buf_head), head)
-			continue
-		}
-		break
-	}
+        avail := head-tail
+        if avail == 0 {
+            futex.Wait(unsafe.Pointer(r.buf_head), head)
+            continue
+        }
 
-	for n = 0; n < len(b) || head-tail > 0; n++ {
-		b[n] = r.buf_d[tail&_BUF_DATA_MASK]
-		atomic.AddUint32(r.buf_tail, 1)
-		head = atomic.LoadUint32(r.buf_head)
-		tail = atomic.LoadUint32(r.buf_tail)
-	}
+        chunk := int(avail)
 
-	futex.Wake(unsafe.Pointer(r.buf_head))
-	return n, nil
+        wrap := int(_BUF_DATA_SIZE - (tail & _BUF_DATA_MASK))
+        if chunk > wrap {
+            chunk = wrap
+        }
+        remain := len(p) - n
+        if chunk > remain {
+            chunk = remain
+        }
+
+        start := int(tail & _BUF_DATA_MASK)
+        copy(p[n:n+chunk], r.buf_d[start:start+chunk])
+
+        atomic.AddUint32(r.buf_tail, uint32(chunk))
+        futex.Wake(unsafe.Pointer(r.buf_tail))
+        n += chunk
+    }
+
+    return n, nil
 }
 
 type Writer struct {
@@ -86,7 +95,7 @@ type Writer struct {
 }
 
 func (l *Logger) NewWriter() (io.Writer, error) {
-	buf, err := unix.Mmap(l.fd, 0, int(_BUF_SIZE), unix.PROT_WRITE|unix.PROT_READ, unix.MAP_SHARED)
+	buf, err := unix.Mmap(l.Fd, 0, int(_BUF_SIZE), unix.PROT_WRITE|unix.PROT_READ, unix.MAP_SHARED)
 	if err != nil {
 		return nil, err
 	}
@@ -95,25 +104,32 @@ func (l *Logger) NewWriter() (io.Writer, error) {
 }
 
 func (w *Writer) Write(p []byte) (n int, err error) {
-	head := atomic.LoadUint32(w.buf_head)
-	tail := atomic.LoadUint32(w.buf_tail)
+    total := len(p)
 
-	for {
-		if head+1 == tail {
-			futex.Wait(unsafe.Pointer(w.buf_tail), tail)
-			continue
-		}
-		break
-	}
+    for n < total {
+        head := atomic.LoadUint32(w.buf_head)
+        tail := atomic.LoadUint32(w.buf_tail)
 
-	for n = 0; n < len(p) || head+1 != tail; n++ {
-		w.buf[head&_BUF_DATA_MASK] = p[n]
+        free := _BUF_DATA_SIZE - (head - tail)
+        if free == 0 {
+            futex.Wait(unsafe.Pointer(w.buf_tail), tail)
+            continue
+        }
 
-		atomic.AddUint32(w.buf_head, 1)
-		head = atomic.LoadUint32(w.buf_head)
-		tail = atomic.LoadUint32(w.buf_tail)
-	}
-	futex.Wake(unsafe.Pointer(w.buf_head))
+        chunk := int(free)
+        endOfBuf := int(_BUF_DATA_SIZE - (head&_BUF_DATA_MASK))
+        if chunk > endOfBuf {
+            chunk = endOfBuf
+        }
+        if chunk > total-n {
+            chunk = total - n
+        }
 
-	return n, err
+        dst := w.buf_d[head&_BUF_DATA_MASK : (head&_BUF_DATA_MASK)+uint32(chunk)]
+        copy(dst, p[n:n+chunk])
+        atomic.AddUint32(w.buf_head, uint32(chunk))
+        futex.Wake(unsafe.Pointer(w.buf_head))
+        n += chunk
+    }
+    return n, nil
 }
