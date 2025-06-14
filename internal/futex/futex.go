@@ -1,5 +1,5 @@
 // package futex implements wrappers for futex system
-// call. Wait and Wake are implemented with single FUTEX_WAIT or 
+// call. Wait and Wake are implemented with single FUTEX_WAIT or
 // FUTEX_WAKE operations. Other operation and optimizations
 // like FUTEX_PRIVATE_FLAG are not implemented.
 // Also, Wake only wakes one waiter.
@@ -20,9 +20,13 @@ func Wait(addr unsafe.Pointer, val uint32) error {
 	_, _, e := unix.Syscall6(unix.SYS_FUTEX,
 		uintptr(addr),
 		uintptr(FUTEX_WAIT),
-		uintptr(val),      
-		0, 0, 0)          
-	if e != 0 {
+		uintptr(val),
+		0, 0, 0)
+
+	switch e {
+	case 0, unix.EAGAIN, unix.EINTR:
+		return nil
+	default:
 		return e
 	}
 	return nil
