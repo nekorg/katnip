@@ -8,9 +8,9 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[FocusExclusive-0]
-	_ = x[FocusNotAllowed-1]
-	_ = x[FocusOnDemand-2]
+	_ = x[FocusExclusive-1]
+	_ = x[FocusNotAllowed-2]
+	_ = x[FocusOnDemand-3]
 }
 
 const _FocusPolicy_name = "exclusivenot-allowedon-demand"
@@ -18,8 +18,9 @@ const _FocusPolicy_name = "exclusivenot-allowedon-demand"
 var _FocusPolicy_index = [...]uint8{0, 9, 20, 29}
 
 func (i FocusPolicy) String() string {
+	i -= 1
 	if i < 0 || i >= FocusPolicy(len(_FocusPolicy_index)-1) {
-		return "FocusPolicy(" + strconv.FormatInt(int64(i), 10) + ")"
+		return "FocusPolicy(" + strconv.FormatInt(int64(i+1), 10) + ")"
 	}
 	return _FocusPolicy_name[_FocusPolicy_index[i]:_FocusPolicy_index[i+1]]
 }

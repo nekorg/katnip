@@ -2,34 +2,14 @@ package katnip
 
 import (
 	"fmt"
+	"io"
 	"os"
-	"os/exec"
-	"strconv"
+
 )
 
-var (
-	envname         = "KATNIP"
-	kittyCmd        = "kitty"
-	registry        = map[string]Panel{}
-	index    uint64 = 0
-)
+var registry = map[string]PanelHandler{}
 
-// Returns "{envname}_{name}".
-//
-// envname is KATNIP by default
-func GetEnvKey(name string) string {
-	return fmt.Sprintf("%s_%s", envname, name)
-}
-
-// Returns "{key}={value}".
-//
-// key is the returned value from GetEnvKey function
-// with name as argument
-func GetEnvPair(name, value string) string {
-	return fmt.Sprintf("%s=%s", GetEnvKey(name), value)
-}
-
-func Register(name string, panel Panel) {
+func Register(name string, panel PanelHandler) {
 	instance := os.Getenv(GetEnvKey("INSTANCE"))
 	if instance != "" && instance == name {
 		if err := runPanel(panel); err != nil {
@@ -41,13 +21,11 @@ func Register(name string, panel Panel) {
 	registry[name] = panel
 }
 
-
 func RegisterFunc(name string, panel PanelFunc) {
-  Register(name, panel)
+	Register(name, panel)
 }
 
-
-func runPanel(panel Panel) error {
+func runPanel(panel PanelHandler) error {
 	socketPath := os.Getenv(GetEnvKey("SOCKET"))
 	if socketPath == "" {
 		return fmt.Errorf("Kitty socket path not given")
@@ -61,19 +39,40 @@ func runPanel(panel Panel) error {
 	return nil
 }
 
-func Launch(name string, config Config) {
-	socketPath := fmt.Sprintf("/tmp/katnip-%d-%s-%d", name, os.Getpid(), index)
-	index++
-	args := []string{
-		"+kitten", "panel",
-		"--focus-policy", config.FocusPolicy.String(),
-		"--listen-on", "unix:" + socketPath,
-		"-o", "allow_remote_control=socket-only",
-		"--lines", strconv.Itoa(config.Size.Y),
-		fmt.Sprintf("/proc/%d/exe", os.Getpid()),
-	}
+// Convenience constructors for common panel types
 
-	c := exec.Command(kittyCmd, args...)
-	c.Env = append(c.Environ(), GetEnvPair("INSTANCE", name), GetEnvPair("SOCKET", socketPath))
-  c.Run()
+// TopPanel creates a top-edge panel
+func TopPanel(name string, lines int) *Panel {
+	return NewPanel(name, Config{
+		Edge: EdgeTop,
+		Size: Vector{Y: lines},
+	})
+}
+
+// BottomPanel creates a bottom-edge panel
+func BottomPanel(name string, lines int) *Panel {
+	return NewPanel(name, Config{
+		Edge: EdgeBottom,
+		Size: Vector{Y: lines},
+	})
+}
+
+// BackgroundPanel creates a background/wallpaper panel
+func BackgroundPanel(name string) *Panel {
+	return NewPanel(name, Config{
+		Edge:  EdgeBackground,
+		Layer: LayerBackground,
+	})
+}
+
+// FloatingPanel creates a centered floating panel
+func FloatingPanel(name string, lines, columns int) *Panel {
+	return NewPanel(name, Config{
+		Edge: EdgeCenter,
+		Size: Vector{X: columns, Y: lines},
+	})
+}
+
+func Launch(name string, config Config) {
+	NewPanel(name, config).Run()
 }

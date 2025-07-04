@@ -8,14 +8,14 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[EdgeBackground-0]
-	_ = x[EdgeBottom-1]
-	_ = x[EdgeCenter-2]
-	_ = x[EdgeCenterSized-3]
-	_ = x[EdgeLeft-4]
-	_ = x[EdgeNone-5]
-	_ = x[EdgeRight-6]
-	_ = x[EdgeTop-7]
+	_ = x[EdgeBackground-1]
+	_ = x[EdgeBottom-2]
+	_ = x[EdgeCenter-3]
+	_ = x[EdgeCenterSized-4]
+	_ = x[EdgeLeft-5]
+	_ = x[EdgeNone-6]
+	_ = x[EdgeRight-7]
+	_ = x[EdgeTop-8]
 }
 
 const _Edge_name = "backgroundbottomcentercenter-sizedleftnonerighttop"
@@ -23,8 +23,9 @@ const _Edge_name = "backgroundbottomcentercenter-sizedleftnonerighttop"
 var _Edge_index = [...]uint8{0, 10, 16, 22, 34, 38, 42, 47, 50}
 
 func (i Edge) String() string {
+	i -= 1
 	if i < 0 || i >= Edge(len(_Edge_index)-1) {
-		return "Edge(" + strconv.FormatInt(int64(i), 10) + ")"
+		return "Edge(" + strconv.FormatInt(int64(i+1), 10) + ")"
 	}
 	return _Edge_name[_Edge_index[i]:_Edge_index[i+1]]
 }
