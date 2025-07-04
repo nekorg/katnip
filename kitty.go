@@ -50,7 +50,7 @@ func (k *Kitty) Dispatch(cmd string, payload any) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(msg))
+
 	_, err = sock.Write(packMsg(msg))
 	if err != nil {
 		return err
@@ -66,7 +66,6 @@ func (k *Kitty) Dispatch(cmd string, payload any) error {
 		return err
 	}
 
-	fmt.Println(resp)
 	resp_ok_any, ok := resp["ok"]
 	if !ok {
 		return fmt.Errorf("invalid response schema: field 'ok' not found")
