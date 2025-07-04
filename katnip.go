@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/codelif/shmstream"
 )
 
 var registry = map[string]PanelHandler{}
@@ -31,10 +32,26 @@ func runPanel(panel PanelHandler) error {
 		return fmt.Errorf("Kitty socket path not given")
 	}
 
-	k := &Kitty{socketPath}
-	w := &NotificationWriter{}
+	shmPath := os.Getenv(GetEnvKey("SHM_PATH"))
+	var writer io.Writer
+	if shmPath != "" {
+		shmBuf, err := shmstream.Open(shmPath)
+		if err != nil {
+			return fmt.Errorf("failed to open shared memory: %w", err)
+		}
 
-	panel.Run(k, w)
+		defer shmBuf.Close()
+
+		writer, err = shmBuf.NewWriter()
+		if err != nil {
+			return fmt.Errorf("failed to create shared memory writer: %w", err)
+		}
+	} else {
+		writer = &NotificationWriter{}
+	}
+	k := &Kitty{socketPath}
+
+	panel.Run(k, writer)
 
 	return nil
 }

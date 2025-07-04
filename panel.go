@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strconv"
 
+	"github.com/codelif/shmstream"
 )
 
 type Panel struct {
@@ -19,6 +20,8 @@ type Panel struct {
 	config     Config
 	socketPath string
 	started    bool
+	shmStream  *shmstream.StreamBuffer
+	reader     io.Reader
 }
 
 type PanelHandler interface {
@@ -135,9 +138,24 @@ func NewPanel(name string, config Config) *Panel {
 		socketPath: socketPath,
 	}
 
+	shmStream, err := shmstream.New()
+	if err == nil {
+		p.shmStream = shmStream
+		cmd.Env = append(cmd.Env, GetEnvPair("SHM_PATH", shmStream.Path()))
+		if reader, err := shmStream.NewReader(); err == nil {
+			p.reader = reader
+		}
+	}
 	return p
 }
 
+func (p *Panel) cleanup() {
+	if p.shmStream != nil {
+		p.shmStream.Close()
+		p.shmStream = nil
+		p.reader = nil
+	}
+}
 
 func (p *Panel) Run() error {
 	if p.started {
@@ -174,6 +192,26 @@ func (p *Panel) Kill() error {
 	return p.Cmd.Process.Kill()
 }
 
+func (p *Panel) Reader() io.Reader {
+	return p.reader
+}
+
+// ReadOutput reads all available output from the panel
+// Returns empty slice if no shared memory reader is available
+func (p *Panel) ReadOutput() ([]byte, error) {
+	if p.reader == nil {
+		return []byte{}, nil
+	}
+
+	// Read available data
+	buf := make([]byte, 4096)
+	n, err := p.reader.Read(buf)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	return buf[:n], nil
+}
 func NewPanelContext(ctx context.Context, name string, config Config) *Panel {
 	p := NewPanel(name, config)
 

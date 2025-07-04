@@ -6,6 +6,8 @@ github.com/codelif/shmstream v0.0.0-20250614084836-9ce57730aa66 h1:YIVM1ZzPXIEpV
 github.com/codelif/shmstream v0.0.0-20250614084836-9ce57730aa66/go.mod h1:egLjfn0XvTi8zbz4O2E3EPFMfpQoxh0KK6vbcL5BBgw=
 github.com/codelif/shmstream v0.0.0-20250615192845-ba90868fa014 h1:7Ck3IaTX6/8Ik1mOji9S9JX9sDt/xQXSRZCmIIokBZI=
 github.com/codelif/shmstream v0.0.0-20250615192845-ba90868fa014/go.mod h1:egLjfn0XvTi8zbz4O2E3EPFMfpQoxh0KK6vbcL5BBgw=
+github.com/codelif/shmstream v0.0.0-20250615210949-892549fab185 h1:/2c6xjNq5Kk+JAHada0ZSbet74EHeeeVDlSHFeTL08Y=
+github.com/codelif/shmstream v0.0.0-20250615210949-892549fab185/go.mod h1:egLjfn0XvTi8zbz4O2E3EPFMfpQoxh0KK6vbcL5BBgw=
 github.com/containerd/console v1.0.3 h1:lIr7SlA5PxZyMV30bDW0MGbiOPXwc63yRuCP0ARubLw=
 github.com/containerd/console v1.0.3/go.mod h1:7LqA/THxQ86k76b8c/EMSiaJ3h1eZkMkXar0TQ1gf3U=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
