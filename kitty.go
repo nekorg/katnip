@@ -13,7 +13,8 @@ import (
 const esc byte = 0x1b
 
 var (
-	kittyRCHeader   = append([]byte{esc}, "P@kitty-cmd"...)
+	kittyMsgPrefix  = []byte("\x1bP@kitty-cmd")
+	kittyMsgSuffix  = []byte("\x1b\\")
 	kittyMinVersion = [3]uint64{0, 42, 0}
 )
 
@@ -78,7 +79,7 @@ func (k *Kitty) Close() error {
 }
 
 func packMsg(msg []byte) []byte {
-	return append(append(kittyRCHeader, msg...), esc, '\\')
+	return append(append(kittyMsgPrefix, msg...), kittyMsgSuffix...)
 }
 
 func (k *Kitty) readFrame() ([]byte, error) {
@@ -159,7 +160,7 @@ func (k *Kitty) command(cmd string, payload any) (map[string]any, error) {
 		return nil, fmt.Errorf("failed to write message: %w", err)
 	}
 
-	if _, err = io.ReadFull(k.reader, make([]byte, len(kittyRCHeader))); err != nil {
+	if _, err = io.ReadFull(k.reader, make([]byte, len(kittyMsgPrefix))); err != nil {
 		k.connected = false
 		return nil, fmt.Errorf("failed to read response header: %w", err)
 	}
