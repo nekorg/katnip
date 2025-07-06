@@ -49,7 +49,7 @@ func runPanel(panel PanelHandler) error {
 	} else {
 		writer = &NotificationWriter{}
 	}
-	k := &Kitty{socketPath}
+	k := NewKitty(socketPath)
 
 	panel.Run(k, writer)
 
