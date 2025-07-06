@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-
 type NotificationWriter struct{}
 
 func (w *NotificationWriter) Write(p []byte) (n int, err error) {

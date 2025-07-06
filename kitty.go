@@ -205,8 +205,8 @@ func (k *Kitty) Resize(lines, columns int, edge Edge, layer Layer) error {
 		"os_panel": []string{
 			fmt.Sprintf("lines=%d", lines),
 			fmt.Sprintf("columns=%d", columns),
-      fmt.Sprintf("edge=%s", edge),
-      fmt.Sprintf("layer=%s", layer),
+			fmt.Sprintf("edge=%s", edge),
+			fmt.Sprintf("layer=%s", layer),
 		},
 	})
 }
@@ -217,8 +217,8 @@ func (k *Kitty) Move(x, y int, edge Edge, layer Layer) error {
 		"os_panel": []string{
 			fmt.Sprintf("margin-left=%d", x),
 			fmt.Sprintf("margin-top=%d", y),
-      fmt.Sprintf("edge=%s", edge),
-      fmt.Sprintf("layer=%s", layer),
+			fmt.Sprintf("edge=%s", edge),
+			fmt.Sprintf("layer=%s", layer),
 		},
 	})
 }
@@ -240,4 +240,3 @@ func (k *Kitty) ToggleVisibility() error {
 		"action": "toggle-visibility",
 	})
 }
-

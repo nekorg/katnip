@@ -212,6 +212,7 @@ func (p *Panel) ReadOutput() ([]byte, error) {
 
 	return buf[:n], nil
 }
+
 func NewPanelContext(ctx context.Context, name string, config Config) *Panel {
 	p := NewPanel(name, config)
 
