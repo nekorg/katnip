@@ -1,3 +1,4 @@
+//go:generate stringer -type=Layer,FocusPolicy,Edge -linecomment -output panel_string.go
 package katnip
 
 import (
@@ -34,7 +35,6 @@ func (f PanelFunc) Run(k *Kitty, w io.Writer) {
 	f(k, w)
 }
 
-//go:generate stringer -type=Layer -linecomment
 type Layer int
 
 const (
@@ -44,7 +44,6 @@ const (
 	LayerOverlay                     // overlay
 )
 
-//go:generate stringer -type=FocusPolicy -linecomment
 type FocusPolicy int
 
 const (
@@ -53,7 +52,6 @@ const (
 	FocusOnDemand                          // on-demand
 )
 
-//go:generate stringer -type=Edge -linecomment
 type Edge int
 
 const (
