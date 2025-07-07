@@ -93,6 +93,7 @@ type Config struct {
 	Layer       Layer
 	FocusPolicy FocusPolicy
 	Edge        Edge
+	Overrides   []string
 }
 
 const kittyCmd = "kitty"
@@ -129,6 +130,10 @@ func NewPanel(name string, config Config) *Panel {
 	}
 	if config.Position.Y > 0 {
 		args = append(args, "--margin-top", strconv.Itoa(config.Position.Y))
+	}
+
+	for _, o := range config.Overrides {
+		args = append(args, "-o", o)
 	}
 
 	args = append(args, fmt.Sprintf("/proc/%d/exe", os.Getpid()))
