@@ -93,14 +93,6 @@ type Config struct {
 	Layer       Layer
 	FocusPolicy FocusPolicy
 	Edge        Edge
-
-	// WithSignals causes Panel to install signal handlers to cancel panel context.
-	// Specifically os.Interrupt (which is SIGINT for most systems), and SIGHUP
-	// on receving these signals, the panel process will be terminated and context
-	// be cancelled.
-	// This differs from calling Panel.Stop since Panel.Stop tries to gracefully shutdown
-	// the child panel process first before
-	WithSignals bool
 }
 
 const kittyCmd = "kitty"
