@@ -45,13 +45,13 @@ type Panel struct {
 }
 
 type PanelHandler interface {
-	Run(k *Kitty, w io.Writer)
+	Run(k *Kitty, w io.Writer) int
 }
 
-type PanelFunc func(k *Kitty, w io.Writer)
+type PanelFunc func(k *Kitty, w io.Writer) int
 
-func (f PanelFunc) Run(k *Kitty, w io.Writer) {
-	f(k, w)
+func (f PanelFunc) Run(k *Kitty, w io.Writer) int {
+	return f(k, w)
 }
 
 type Layer int
