@@ -27,6 +27,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"syscall"
 
 	"github.com/codelif/shmstream"
 )
@@ -143,6 +144,7 @@ func NewPanel(name string, config Config) *Panel {
 	args = append(args, fmt.Sprintf("/proc/%d/exe", os.Getpid()))
 
 	cmd := exec.Command(kittyCmd, args...)
+  cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	cmd.Env = append(os.Environ(),
 		GetEnvPair("INSTANCE", name),
