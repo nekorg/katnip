@@ -144,7 +144,7 @@ func NewPanel(name string, config Config) *Panel {
 	args = append(args, fmt.Sprintf("/proc/%d/exe", os.Getpid()))
 
 	cmd := exec.Command(kittyCmd, args...)
-  cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+  cmd.SysProcAttr = &syscall.SysProcAttr{Pdeathsig: syscall.SIGTERM}
 
 	cmd.Env = append(os.Environ(),
 		GetEnvPair("INSTANCE", name),
