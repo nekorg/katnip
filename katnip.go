@@ -32,7 +32,7 @@ var registry = map[string]PanelHandler{}
 func Register(name string, panel PanelHandler) {
 	instance := os.Getenv(GetEnvKey("INSTANCE"))
 	if instance != "" && instance == name {
-    panelExitCode, err := runPanel(panel)
+		panelExitCode, err := runPanel(panel)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -53,7 +53,7 @@ func runPanel(panel PanelHandler) (int, error) {
 	}
 
 	shmPath := os.Getenv(GetEnvKey("SHM_PATH"))
-	var writer io.Writer
+	var shmIo io.ReadWriter
 	if shmPath != "" {
 		shmBuf, err := shmstream.Open(shmPath)
 		if err != nil {
@@ -62,17 +62,22 @@ func runPanel(panel PanelHandler) (int, error) {
 
 		defer shmBuf.Close()
 
-		writer, err = shmBuf.NewWriter()
+		writer, err := shmBuf.NewWriter()
 		if err != nil {
 			return -1, fmt.Errorf("failed to create shared memory writer: %w", err)
 		}
-	} else {
-		writer = &NotificationWriter{}
+		reader, err := shmBuf.NewReader()
+		if err != nil {
+			return -1, fmt.Errorf("failed to create shared memory reader: %w", err)
+		}
+		shmIo = &struct {
+			io.Reader
+			io.Writer
+		}{reader, writer}
 	}
 	k := NewKitty(socketPath)
 
-
-	return panel.Run(k, writer), nil
+	return panel.Run(k, shmIo), nil
 }
 
 // Convenience constructors for common panel types

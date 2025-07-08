@@ -5,7 +5,7 @@ go 1.24.4
 require git.sr.ht/~rockorager/vaxis v0.14.0
 
 require (
-	github.com/codelif/shmstream v0.0.0-20250615210949-892549fab185 // indirect
+	github.com/codelif/shmstream v0.0.0-20250707213419-52bb1dd21b7b // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-sixel v0.0.5 // indirect

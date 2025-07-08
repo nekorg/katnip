@@ -42,17 +42,17 @@ type Panel struct {
 	socketPath string
 	started    bool
 	shmStream  *shmstream.StreamBuffer
-	reader     io.Reader
+	shmIo      io.ReadWriter
 }
 
 type PanelHandler interface {
-	Run(k *Kitty, w io.Writer) int
+	Run(k *Kitty, rw io.ReadWriter) int
 }
 
-type PanelFunc func(k *Kitty, w io.Writer) int
+type PanelFunc func(k *Kitty, rw io.ReadWriter) int
 
-func (f PanelFunc) Run(k *Kitty, w io.Writer) int {
-	return f(k, w)
+func (f PanelFunc) Run(k *Kitty, rw io.ReadWriter) int {
+	return f(k, rw)
 }
 
 type Layer int
@@ -94,7 +94,7 @@ type Config struct {
 	Layer       Layer
 	FocusPolicy FocusPolicy
 	Edge        Edge
-  ConfigFile  string
+	ConfigFile  string
 	Overrides   []string
 }
 
@@ -133,9 +133,9 @@ func NewPanel(name string, config Config) *Panel {
 	if config.Position.Y > 0 {
 		args = append(args, "--margin-top", strconv.Itoa(config.Position.Y))
 	}
-  if config.ConfigFile != "" {
-    args = append(args, "--config", config.ConfigFile)
-  }
+	if config.ConfigFile != "" {
+		args = append(args, "--config", config.ConfigFile)
+	}
 
 	for _, o := range config.Overrides {
 		args = append(args, "-o", o)
@@ -144,7 +144,7 @@ func NewPanel(name string, config Config) *Panel {
 	args = append(args, fmt.Sprintf("/proc/%d/exe", os.Getpid()))
 
 	cmd := exec.Command(kittyCmd, args...)
-  cmd.SysProcAttr = &syscall.SysProcAttr{Pdeathsig: syscall.SIGTERM}
+	cmd.SysProcAttr = &syscall.SysProcAttr{Pdeathsig: syscall.SIGTERM}
 
 	cmd.Env = append(os.Environ(),
 		GetEnvPair("INSTANCE", name),
@@ -158,13 +158,16 @@ func NewPanel(name string, config Config) *Panel {
 		socketPath: socketPath,
 	}
 
-	shmStream, err := shmstream.New()
+	shmStream, err := shmstream.New(shmstream.Config{Bidirectional: true})
 	if err == nil {
 		p.shmStream = shmStream
 		cmd.Env = append(cmd.Env, GetEnvPair("SHM_PATH", shmStream.Path()))
-		if reader, err := shmStream.NewReader(); err == nil {
-			p.reader = reader
-		}
+		reader, _ := shmStream.NewReader()
+		writer, _ := shmStream.NewWriter()
+		p.shmIo = &struct {
+			io.Reader
+			io.Writer
+		}{reader, writer}
 	}
 	return p
 }
@@ -173,7 +176,7 @@ func (p *Panel) cleanup() {
 	if p.shmStream != nil {
 		p.shmStream.Close()
 		p.shmStream = nil
-		p.reader = nil
+		p.shmIo = nil
 	}
 }
 
@@ -213,19 +216,27 @@ func (p *Panel) Kill() error {
 }
 
 func (p *Panel) Reader() io.Reader {
-	return p.reader
+	return p.shmIo
+}
+
+func (p *Panel) Writer() io.Writer {
+	return p.shmIo
+}
+
+func (p *Panel) ReadWriter() io.ReadWriter {
+	return p.shmIo
 }
 
 // ReadOutput reads all available output from the panel
 // Returns empty slice if no shared memory reader is available
 func (p *Panel) ReadOutput() ([]byte, error) {
-	if p.reader == nil {
+	if p.shmIo == nil {
 		return []byte{}, nil
 	}
 
 	// Read available data
 	buf := make([]byte, 4096)
-	n, err := p.reader.Read(buf)
+	n, err := p.shmIo.Read(buf)
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
