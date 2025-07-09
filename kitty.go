@@ -219,26 +219,28 @@ func (k *Kitty) SetOpacity(opacity float64) error {
 	return k.Dispatch("set-background-opacity", map[string]float64{"opacity": opacity})
 }
 
-func (k *Kitty) Resize(lines, columns int, edge Edge, layer Layer) error {
+func (k *Kitty) Resize(columns, lines int) error {
 	return k.Dispatch("resize-os-window", map[string]any{
 		"action": "os-panel",
+    "incremental": true,
 		"os_panel": []string{
 			fmt.Sprintf("lines=%d", lines),
 			fmt.Sprintf("columns=%d", columns),
-			fmt.Sprintf("edge=%s", edge),
-			fmt.Sprintf("layer=%s", layer),
+			// fmt.Sprintf("edge=%s", edge),
+			// fmt.Sprintf("layer=%s", layer),
 		},
 	})
 }
 
-func (k *Kitty) Move(x, y int, edge Edge, layer Layer) error {
+func (k *Kitty) Move(x, y int) error {
 	return k.Dispatch("resize-os-window", map[string]any{
 		"action": "os-panel",
+    "incremental": true,
 		"os_panel": []string{
 			fmt.Sprintf("margin-left=%d", x),
 			fmt.Sprintf("margin-top=%d", y),
-			fmt.Sprintf("edge=%s", edge),
-			fmt.Sprintf("layer=%s", layer),
+			// fmt.Sprintf("edge=%s", edge),
+			// fmt.Sprintf("layer=%s", layer),
 		},
 	})
 }
