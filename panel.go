@@ -118,6 +118,11 @@ type Config struct {
 
 	// Easier way to add -o options
 	KittyOverrides []string
+
+	// kitty command to be invoked, default: kitty
+	//
+	// one usecase: when multiple versions of kitty are installed and maintained using symlinks
+	KittyCmd string
 }
 
 const kittyCmd = "kitty"
@@ -191,7 +196,11 @@ func NewPanel(name string, config Config) *Panel {
 
 	args = append(args, fmt.Sprintf("/proc/%d/exe", os.Getpid()))
 
-	cmd := exec.Command(kittyCmd, args...)
+	kc := kittyCmd
+	if config.KittyCmd != "" {
+		kc = config.KittyCmd
+	}
+	cmd := exec.Command(kc, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Pdeathsig: syscall.SIGTERM}
 
 	cmd.Env = append(os.Environ(),
