@@ -88,14 +88,36 @@ const (
 type Vector struct {
 	X, Y int
 }
+
+type Margins struct {
+	Top, Bottom, Left, Right int
+}
+
 type Config struct {
 	Position    Vector
 	Size        Vector
 	Layer       Layer
 	FocusPolicy FocusPolicy
 	Edge        Edge
-	ConfigFile  string
-	Overrides   []string
+
+	OutputName      string
+	Class           string
+	HideOnFocusLoss bool
+	StartAsHidden   bool
+
+	SingleInstance bool
+	InstanceGroup  string
+
+	// Doesn't do anything right now
+	// Margins     Margins
+
+	ConfigFile string
+
+	// appended to the last, can be used to add unspecified options
+	Overrides map[string]string
+
+	// Easier way to add -o options
+	KittyOverrides []string
 }
 
 const kittyCmd = "kitty"
@@ -136,9 +158,35 @@ func NewPanel(name string, config Config) *Panel {
 	if config.ConfigFile != "" {
 		args = append(args, "--config", config.ConfigFile)
 	}
+	if config.Class != "" {
+		args = append(args, "--class", config.Class)
+	} else {
+		args = append(args, "--class", name)
+	}
+	if config.OutputName != "" {
+		args = append(args, "--output-name", config.OutputName)
+	}
+	if config.HideOnFocusLoss {
+		args = append(args, "--hide-on-focus-loss")
+	}
+	if config.StartAsHidden {
+		args = append(args, "--start-as-hidden")
+	}
+	if config.InstanceGroup != "" {
+		args = append(args,
+			"--single-instance",
+			"--instance-group", config.InstanceGroup,
+		)
+	} else if config.SingleInstance {
+		args = append(args, "--single-instance")
+	}
 
-	for _, o := range config.Overrides {
+	for _, o := range config.KittyOverrides {
 		args = append(args, "-o", o)
+	}
+
+	for k, v := range config.Overrides {
+		args = append(args, k, v)
 	}
 
 	args = append(args, fmt.Sprintf("/proc/%d/exe", os.Getpid()))
