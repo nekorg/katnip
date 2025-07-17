@@ -221,8 +221,8 @@ func (k *Kitty) SetOpacity(opacity float64) error {
 
 func (k *Kitty) Resize(columns, lines int) error {
 	return k.Dispatch("resize-os-window", map[string]any{
-		"action": "os-panel",
-    "incremental": true,
+		"action":      "os-panel",
+		"incremental": true,
 		"os_panel": []string{
 			fmt.Sprintf("lines=%d", lines),
 			fmt.Sprintf("columns=%d", columns),
@@ -234,8 +234,8 @@ func (k *Kitty) Resize(columns, lines int) error {
 
 func (k *Kitty) Move(x, y int) error {
 	return k.Dispatch("resize-os-window", map[string]any{
-		"action": "os-panel",
-    "incremental": true,
+		"action":      "os-panel",
+		"incremental": true,
 		"os_panel": []string{
 			fmt.Sprintf("margin-left=%d", x),
 			fmt.Sprintf("margin-top=%d", y),
