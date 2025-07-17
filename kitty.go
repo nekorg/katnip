@@ -34,7 +34,7 @@ const esc byte = 0x1b
 var (
 	kittyMsgPrefix  = []byte("\x1bP@kitty-cmd")
 	kittyMsgSuffix  = []byte("\x1b\\")
-	kittyMinVersion = [3]uint64{0, 42, 0}
+	kittyMinVersion = [3]uint64{0, 42, 2}
 )
 
 type kittySockMsg struct {
