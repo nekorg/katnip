@@ -1,4 +1,4 @@
-module github.com/codelif/katnip
+module github.com/nekorg/katnip
 
 go 1.24.4
 
